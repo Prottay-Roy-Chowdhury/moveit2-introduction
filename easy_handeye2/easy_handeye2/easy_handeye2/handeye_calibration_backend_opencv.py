@@ -12,11 +12,11 @@ class HandeyeCalibrationBackendOpenCV(object):
     """Minimum samples required for a successful calibration."""
 
     AVAILABLE_ALGORITHMS = {
-        'Tsai-Lenz': cv2.CALIB_HAND_EYE_TSAI,
-        'Park': cv2.CALIB_HAND_EYE_PARK,
-        'Horaud': cv2.CALIB_HAND_EYE_HORAUD,
-        'Andreff': cv2.CALIB_HAND_EYE_ANDREFF,
-        'Daniilidis': cv2.CALIB_HAND_EYE_DANIILIDIS,
+        "Tsai-Lenz": cv2.CALIB_HAND_EYE_TSAI,
+        "Park": cv2.CALIB_HAND_EYE_PARK,
+        "Horaud": cv2.CALIB_HAND_EYE_HORAUD,
+        "Andreff": cv2.CALIB_HAND_EYE_ANDREFF,
+        "Daniilidis": cv2.CALIB_HAND_EYE_DANIILIDIS,
     }
 
     @staticmethod
@@ -59,13 +59,16 @@ class HandeyeCalibrationBackendOpenCV(object):
         :rtype: easy_handeye.handeye_calibration.HandeyeCalibration
         """
         if algorithm is None:
-            algorithm = 'Tsai-Lenz'
+            algorithm = "Tsai-Lenz"
 
-        node.get_logger().info('OpenCV backend calibrating with algorithm {}'.format(algorithm))
+        node.get_logger().info("OpenCV backend calibrating with algorithm {}".format(algorithm))
 
         if len(samples.samples) < HandeyeCalibrationBackendOpenCV.MIN_SAMPLES:
-            node.get_logger().warn("{} more samples needed! Not computing the calibration".format(
-                HandeyeCalibrationBackendOpenCV.MIN_SAMPLES - len(samples.samples)))
+            node.get_logger().warn(
+                "{} more samples needed! Not computing the calibration".format(
+                    HandeyeCalibrationBackendOpenCV.MIN_SAMPLES - len(samples.samples)
+                )
+            )
             return
 
         # Update data
@@ -80,16 +83,19 @@ class HandeyeCalibrationBackendOpenCV(object):
 
         method = HandeyeCalibrationBackendOpenCV.AVAILABLE_ALGORITHMS[algorithm]
 
-        hand_camera_rot, hand_camera_tr = cv2.calibrateHandEye(hand_world_rot, hand_world_tr, marker_camera_rot,
-                                                               marker_camera_tr, method=method)
+        hand_camera_rot, hand_camera_tr = cv2.calibrateHandEye(
+            hand_world_rot, hand_world_tr, marker_camera_rot, marker_camera_tr, method=method
+        )
         result = tfs.affines.compose(np.squeeze(hand_camera_tr), hand_camera_rot, [1, 1, 1])
 
         node.get_logger().info("Computed calibration: {}".format(str(result)))
         (hcqw, hcqx, hcqy, hcqz) = [float(i) for i in tfs.quaternions.mat2quat(hand_camera_rot)]
         (hctx, hcty, hctz) = [float(i) for i in hand_camera_tr]
 
-        result = Transform(translation=Vector3(x=hctx, y=hcty, z=hctz),
-                           rotation=Quaternion(x=hcqx, y=hcqy, z=hcqz, w=hcqw))
+        result = Transform(
+            translation=Vector3(x=hctx, y=hcty, z=hctz),
+            rotation=Quaternion(x=hcqx, y=hcqy, z=hcqz, w=hcqw),
+        )
 
         ret = HandeyeCalibration(parameters=handeye_parameters, transform=result)
 

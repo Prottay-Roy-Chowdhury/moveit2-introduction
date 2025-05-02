@@ -111,7 +111,7 @@ target_link_libraries(${PROJECT_NAME}_node
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
+  
 ## Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}_node
   ARCHIVE DESTINATION lib
@@ -128,4 +128,9 @@ install(
   DESTINATION share/${PROJECT_NAME}/
 )
 
+install(
+  PROGRAMS
+    launch/driver.launch.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()
